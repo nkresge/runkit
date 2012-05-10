@@ -292,7 +292,14 @@ static void php_runkit_register_auto_global(char *s, int len TSRMLS_DC)
 	}
 
 #ifdef ZEND_ENGINE_2
-	if (zend_register_auto_global(s, len, NULL TSRMLS_CC) == SUCCESS) {
+	if (zend_register_auto_global(
+		s,
+		len,
+#if ZEND_MODULE_API_NO >= 20100525
+		0,
+#endif
+		NULL TSRMLS_CC
+	) == SUCCESS) {
 
 		/* This shouldn't be necessary, but it is */
 		zend_auto_global_disable_jit(s, len TSRMLS_CC);
