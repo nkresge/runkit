@@ -392,7 +392,7 @@ PHP_RSHUTDOWN_FUNCTION(runkit)
 {
 #ifdef PHP_RUNKIT_SUPERGLOBALS
 	if (RUNKIT_G(superglobals)) {
-		zend_hash_apply(RUNKIT_G(superglobals), php_runkit_superglobal_dtor TSRMLS_CC);
+		zend_hash_apply(RUNKIT_G(superglobals), (apply_func_t) php_runkit_superglobal_dtor TSRMLS_CC);
 
 		zend_hash_destroy(RUNKIT_G(superglobals));
 		FREE_HASHTABLE(RUNKIT_G(superglobals));
@@ -402,7 +402,7 @@ PHP_RSHUTDOWN_FUNCTION(runkit)
 #ifdef PHP_RUNKIT_MANIPULATION
 	if (RUNKIT_G(misplaced_internal_functions)) {
 		/* Just wipe out rename-to targets before restoring originals */
-		zend_hash_apply(RUNKIT_G(misplaced_internal_functions), php_runkit_destroy_misplaced_functions TSRMLS_CC);
+		zend_hash_apply(RUNKIT_G(misplaced_internal_functions), (apply_func_t) php_runkit_destroy_misplaced_functions TSRMLS_CC);
 		zend_hash_destroy(RUNKIT_G(misplaced_internal_functions));
 		FREE_HASHTABLE(RUNKIT_G(misplaced_internal_functions));
 		RUNKIT_G(misplaced_internal_functions) = NULL;
@@ -410,7 +410,7 @@ PHP_RSHUTDOWN_FUNCTION(runkit)
 
 	if (RUNKIT_G(replaced_internal_functions)) {
 		/* Restore internal functions */
-		zend_hash_apply_with_arguments(RUNKIT_53_TSRMLS_PARAM(RUNKIT_G(replaced_internal_functions)), php_runkit_restore_internal_functions, 1, RUNKIT_TSRMLS_C);
+		zend_hash_apply_with_arguments(RUNKIT_53_TSRMLS_PARAM(RUNKIT_G(replaced_internal_functions)), (apply_func_args_t) php_runkit_restore_internal_functions, 1, RUNKIT_TSRMLS_C);
 		zend_hash_destroy(RUNKIT_G(replaced_internal_functions));
 		FREE_HASHTABLE(RUNKIT_G(replaced_internal_functions));
 		RUNKIT_G(replaced_internal_functions) = NULL;
