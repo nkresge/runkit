@@ -1,5 +1,5 @@
 --TEST--
-Runkit_Sandbox with register_globlas
+Runkit_Sandbox with register_globals
 --SKIPIF--
 <?php if(!extension_loaded("runkit") || !RUNKIT_FEATURE_SANDBOX) print "skip"; ?>
 --INI--
