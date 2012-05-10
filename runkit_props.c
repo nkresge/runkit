@@ -52,8 +52,13 @@ int php_runkit_update_children_def_props(RUNKIT_53_TSRMLS_ARG(zend_class_entry *
 	}
 
 	Z_ADDREF_P(p);
+#if ZEND_MODULE_API_NO >= 20100525
+	zend_hash_del(&ce->default_properties_table, pname, pname_len + 1);
+	if (zend_hash_add(&ce->default_properties_table, pname, pname_len + 1, (void *) &p, sizeof(zval*), NULL) ==  FAILURE) {
+#else
 	zend_hash_del(&ce->default_properties, pname, pname_len + 1);
 	if (zend_hash_add(&ce->default_properties, pname, pname_len + 1, (void *) &p, sizeof(zval*), NULL) ==  FAILURE) {
+#endif
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Error updating child class");
 		return ZEND_HASH_APPLY_KEEP;
 	}
@@ -86,7 +91,11 @@ int php_runkit_remove_children_def_props(RUNKIT_53_TSRMLS_ARG(zend_class_entry *
 	/* Process children of this child */
 	zend_hash_apply_with_arguments(RUNKIT_53_TSRMLS_PARAM(EG(class_table)), (apply_func_args_t)php_runkit_remove_children_def_props, 4, ce, pname, pname_len);
 
+#if ZEND_MODULE_API_NO >= 20100525
+	if (zend_hash_del(&ce->default_properties_table, pname, pname_len + 1) == FAILURE) {
+#else
 	if (zend_hash_del(&ce->default_properties, pname, pname_len + 1) == FAILURE) {
+#endif
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Error removing default property from child class");
 		return ZEND_HASH_APPLY_KEEP;
 	}
@@ -159,7 +168,11 @@ static int php_runkit_def_prop_add(char *classname, int classname_len, char *pro
 
 	/* Check for existing property by this name */
 	/* Existing public? */
+#if ZEND_MODULE_API_NO >= 20100525
+	if (zend_hash_exists(&ce->default_properties_table, key, key_len + 1)) {
+#else
 	if (zend_hash_exists(&ce->default_properties, key, key_len + 1)) {
+#endif
 		zval_ptr_dtor(&copyval);
 		FREE_ZVAL(copyval);
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s::%s already exists", classname, propname);
@@ -169,7 +182,11 @@ static int php_runkit_def_prop_add(char *classname, int classname_len, char *pro
 #ifdef ZEND_ENGINE_2
 	/* Existing Protected? */
 	zend_mangle_property_name(&temp, &temp_len, "*", 1, propname, propname_len, 0);
+#if ZEND_MODULE_API_NO >= 20100525
+	if (zend_hash_exists(&ce->default_properties_table, temp, temp_len + 1)) {
+#else
 	if (zend_hash_exists(&ce->default_properties, temp, temp_len + 1)) {
+#endif
 		zval_ptr_dtor(&copyval);
 		FREE_ZVAL(copyval);
 		efree(temp);
@@ -180,7 +197,11 @@ static int php_runkit_def_prop_add(char *classname, int classname_len, char *pro
 
 	/* Existing Private? */
 	zend_mangle_property_name(&temp, &temp_len, classname, classname_len, propname, propname_len, 0);
+#if ZEND_MODULE_API_NO >= 20100525
+	if (zend_hash_exists(&ce->default_properties_table, temp, temp_len + 1)) {
+#else
 	if (zend_hash_exists(&ce->default_properties, temp, temp_len + 1)) {
+#endif
 		zval_ptr_dtor(&copyval);
 		FREE_ZVAL(copyval);
 		efree(temp);
@@ -239,7 +260,11 @@ static int php_runkit_def_prop_remove(char *classname, int classname_len, char *
 	}
 
 	/* Resolve the property's name */
+#if ZEND_MODULE_API_NO >= 20100525
+	if (zend_hash_exists(&ce->default_properties_table, propname, propname_len + 1)) {
+#else
 	if (zend_hash_exists(&ce->default_properties, propname, propname_len + 1)) {
+#endif
 		key = propname;
 		key_len = propname_len;
 	}
@@ -247,7 +272,11 @@ static int php_runkit_def_prop_remove(char *classname, int classname_len, char *
 #ifdef ZEND_ENGINE_2
 	if (!key) {
 		zend_mangle_property_name(&protected, &protected_len, "*", 1, propname, propname_len, 0);
+#if ZEND_MODULE_API_NO >= 20100525
+		if (zend_hash_exists(&ce->default_properties_table, protected, protected_len + 1)) {
+#else
 		if (zend_hash_exists(&ce->default_properties, protected, protected_len + 1)) {
+#endif
 			key = protected;
 			key_len = protected_len;
 		} else {
@@ -257,7 +286,11 @@ static int php_runkit_def_prop_remove(char *classname, int classname_len, char *
 
 	if (!key) {
 		zend_mangle_property_name(&private, &private_len, classname, classname_len, propname, propname_len, 0);
+#if ZEND_MODULE_API_NO >= 20100525
+		if (zend_hash_exists(&ce->default_properties_table, private, private_len + 1)) {
+#else
 		if (zend_hash_exists(&ce->default_properties, private, private_len + 1)) {
+#endif
 			key = private;
 			key_len = private_len;
 			is_private = 1;
@@ -272,7 +305,11 @@ static int php_runkit_def_prop_remove(char *classname, int classname_len, char *
 		return FAILURE;
 	}
 
+#if ZEND_MODULE_API_NO >= 20100525
+	if (zend_hash_del(&ce->default_properties_table, key, key_len + 1) == FAILURE) {
+#else
 	if (zend_hash_del(&ce->default_properties, key, key_len + 1) == FAILURE) {
+#endif
 		if (key != propname) {
 			efree(key);
 		}

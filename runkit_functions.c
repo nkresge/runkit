@@ -146,8 +146,26 @@ void php_runkit_function_copy_ctor(zend_function *fe, char *newname)
 	opcode_copy = safe_emalloc(sizeof(zend_op), fe->op_array.last, 0);
 	for(i = 0; i < fe->op_array.last; i++) {
 		opcode_copy[i] = fe->op_array.opcodes[i];
+#if ZEND_MODULE_API_NO >= 20100525
+		if (opcode_copy[i].op1_type == IS_CONST) {
+			zval_copy_ctor(&opcode_copy[i].op1.constant);
+		} else {
+			if (opcode_copy[i].op1.jmp_addr >= fe->op_array.opcodes &&
+				opcode_copy[i].op1.jmp_addr <  fe->op_array.opcodes + fe->op_array.last) {
+				opcode_copy[i].op1.jmp_addr =  opcode_copy + (fe->op_array.opcodes[i].op1.jmp_addr - fe->op_array.opcodes);
+			}
+        }
+
+		if (opcode_copy[i].op2_type == IS_CONST) {
+			zval_copy_ctor(&opcode_copy[i].op2.constant);
+#else
 		if (opcode_copy[i].op1.op_type == IS_CONST) {
 			zval_copy_ctor(&opcode_copy[i].op1.u.constant);
+		} else {
+			if (opcode_copy[i].op2.jmp_addr >= fe->op_array.opcodes &&
+				opcode_copy[i].op2.jmp_addr <  fe->op_array.opcodes + fe->op_array.last) {
+				opcode_copy[i].op2.jmp_addr =  opcode_copy + (fe->op_array.opcodes[i].op2.jmp_addr - fe->op_array.opcodes);
+			}
 #ifdef ZEND_ENGINE_2
 		} else {
 			if (opcode_copy[i].op1.u.jmp_addr >= fe->op_array.opcodes &&
@@ -166,10 +184,15 @@ void php_runkit_function_copy_ctor(zend_function *fe, char *newname)
 				opcode_copy[i].op2.u.jmp_addr =  opcode_copy + (fe->op_array.opcodes[i].op2.u.jmp_addr - fe->op_array.opcodes);
 			}
 #endif
+#endif
 		}
 	}
 	fe->op_array.opcodes = opcode_copy;
+#if ZEND_MODULE_API_NO >= 20100525
+	EG(start_op) = fe->op_array.opcodes;
+#else
 	fe->op_array.start_op = fe->op_array.opcodes;
+#endif
 
 	if (newname) {
 		fe->op_array.function_name = newname;
@@ -497,7 +520,11 @@ PHP_FUNCTION(runkit_return_value_used)
 		RETURN_FALSE;
 	}
 
+#if ZEND_MODULE_API_NO >= 20100525
+	RETURN_BOOL(!(ptr->opline->result_type & EXT_TYPE_UNUSED));
+#else
 	RETURN_BOOL(!(ptr->opline->result.u.EA.type & EXT_TYPE_UNUSED));
+#endif
 }
 /* }}} */
 

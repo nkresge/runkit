@@ -271,11 +271,19 @@ static int php_runkit_import_class_props(zend_class_entry *dce, zend_class_entry
 	long idx;
 	zval **p;
 
+#if ZEND_MODULE_API_NO >= 20100525
+	zend_hash_internal_pointer_reset_ex(&ce->default_properties_table, &pos);
+	while (zend_hash_get_current_data_ex(&ce->default_properties_table, (void**)&p, &pos) == SUCCESS && p && *p) {
+		long action = HASH_ADD;
+
+		if (zend_hash_get_current_key_ex(&ce->default_properties_table, &key, &key_len, &idx, 0, &pos) == HASH_KEY_IS_STRING) {
+#else
 	zend_hash_internal_pointer_reset_ex(&ce->default_properties, &pos);
 	while (zend_hash_get_current_data_ex(&ce->default_properties, (void**)&p, &pos) == SUCCESS && p && *p) {
 		long action = HASH_ADD;
 
 		if (zend_hash_get_current_key_ex(&ce->default_properties, &key, &key_len, &idx, 0, &pos) == HASH_KEY_IS_STRING) {
+#endif
 			char *cname = NULL, *pname = key;
 
 #ifdef ZEND_ENGINE_2_2
@@ -283,7 +291,11 @@ static int php_runkit_import_class_props(zend_class_entry *dce, zend_class_entry
 #elif defined(ZEND_ENGINE_2)
 			zend_unmangle_property_name(key, &cname, &pname);
 #endif
+#if ZEND_MODULE_API_NO >= 20100525
+			if (zend_hash_exists(&dce->default_properties_table, key, key_len)) {
+#else
 			if (zend_hash_exists(&dce->default_properties, key, key_len)) {
+#endif
 				if (override) {
 					action = HASH_UPDATE;
 				} else {
@@ -302,7 +314,11 @@ static int php_runkit_import_class_props(zend_class_entry *dce, zend_class_entry
 			}
 
 			Z_ADDREF_P(*p);
+#if ZEND_MODULE_API_NO >= 20100525
+			if (zend_hash_add_or_update(&dce->default_properties_table, key, key_len, (void *) p, sizeof(zval*), NULL, action) == FAILURE) {
+#else
 			if (zend_hash_add_or_update(&dce->default_properties, key, key_len, (void *) p, sizeof(zval*), NULL, action) == FAILURE) {
+#endif
 				zval_ptr_dtor(*p);
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to import %s->%s", dce->name, pname);
 			}
@@ -315,7 +331,11 @@ static int php_runkit_import_class_props(zend_class_entry *dce, zend_class_entry
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Property has invalid key name");
 		}
 import_prop_skip:
+#if ZEND_MODULE_API_NO >= 20100525
+		zend_hash_move_forward_ex(&ce->default_properties_table, &pos);
+#else
 		zend_hash_move_forward_ex(&ce->default_properties, &pos);
+#endif
 	}
 
 	return SUCCESS;
