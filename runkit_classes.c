@@ -133,7 +133,6 @@ PHP_FUNCTION(runkit_class_adopt)
 
 #endif /* PHP_RUNKIT_MANIPULATION */
 
-#ifdef ZEND_ENGINE_2
 /* {{{ proto int runkit_object_id(object instance)
 Fetch the Object Handle ID from an instance */
 PHP_FUNCTION(runkit_object_id)
@@ -147,13 +146,3 @@ PHP_FUNCTION(runkit_object_id)
 	RETURN_LONG(Z_OBJ_HANDLE_P(obj));
 }
 /* }}} */
-#endif /* ZEND_ENGINE_2 */
-/*
- * Local variables:
- * tab-width: 4
- * c-basic-offset: 4
- * End:
- * vim600: noet sw=4 ts=4 fdm=marker
- * vim<600: noet sw=4 ts=4
- */
-

@@ -44,9 +44,6 @@
 #define PHP_RUNKIT_IMPORT_CLASSES                   (PHP_RUNKIT_IMPORT_CLASS_METHODS|PHP_RUNKIT_IMPORT_CLASS_CONSTS|PHP_RUNKIT_IMPORT_CLASS_PROPS|PHP_RUNKIT_IMPORT_CLASS_STATIC_PROPS)
 #define PHP_RUNKIT_IMPORT_OVERRIDE                  0x0020
 
-#define ZEND_ENGINE_2_2
-#define ZEND_ENGINE_2_1
-
 /* The TSRM interpreter patch required by runkit_sandbox was added in 5.1, but this package includes diffs for older versions
  * Those diffs include an additional #define to indicate that they've been applied
  */
@@ -70,9 +67,7 @@ PHP_RSHUTDOWN_FUNCTION(runkit);
 PHP_MINFO_FUNCTION(runkit);
 
 PHP_FUNCTION(runkit_return_value_used);
-#ifdef ZEND_ENGINE_2
 PHP_FUNCTION(runkit_object_id);
-#endif
 
 #ifdef PHP_RUNKIT_MANIPULATION
 PHP_FUNCTION(runkit_function_add);
@@ -145,7 +140,7 @@ extern ZEND_DECLARE_MODULE_GLOBALS(runkit);
 #endif
 
 #ifdef PHP_RUNKIT_MANIPULATION
-#if defined(ZEND_ENGINE_2) && !defined(zend_hash_add_or_update)
+#if !defined(zend_hash_add_or_update)
 /* Why doesn't ZE2 define this? */
 #define zend_hash_add_or_update(ht, arKey, nKeyLength, pData, pDataSize, pDest, flag) \
         _zend_hash_add_or_update((ht), (arKey), (nKeyLength), (pData), (pDataSize), (pDest), (flag) ZEND_FILE_LINE_CC)
@@ -169,9 +164,7 @@ int php_runkit_fetch_class(char *classname, int classname_len, zend_class_entry 
 int php_runkit_fetch_class_int(char *classname, int classname_len, zend_class_entry **pce TSRMLS_DC);
 int php_runkit_clean_children_methods(RUNKIT_53_TSRMLS_ARG(zend_class_entry *ce), int num_args, va_list args, zend_hash_key *hash_key);
 int php_runkit_update_children_methods(RUNKIT_53_TSRMLS_ARG(zend_class_entry *ce), int num_args, va_list args, zend_hash_key *hash_key);
-#ifdef ZEND_ENGINE_2
 int php_runkit_fetch_interface(char *classname, int classname_len, zend_class_entry **pce TSRMLS_DC);
-#endif
 
 #define PHP_RUNKIT_FUNCTION_ADD_REF(f)	function_add_ref(f)
 #define php_runkit_locate_scope(ce, fe, methodname, methodname_len)   fe->common.scope
@@ -291,12 +284,4 @@ struct _php_runkit_sandbox_object {
 #endif /* PHP_RUNKIT_MANIPULATION */
 
 #endif	/* PHP_RUNKIT_H */
-
-/*
- * Local variables:
- * tab-width: 4
- * c-basic-offset: 4
- * End:
- * vim600: noet sw=4 ts=4 fdm=marker
- * vim<600: noet sw=4 ts=4
- */
+/* }}} */

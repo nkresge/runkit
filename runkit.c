@@ -73,9 +73,7 @@ PHP_FUNCTION(runkit_zval_inspect)
 zend_function_entry runkit_functions[] = {
 
 	PHP_FE(runkit_zval_inspect,										NULL)
-#ifdef ZEND_ENGINE_2
 	PHP_FE(runkit_object_id,										NULL)
-#endif
 	PHP_FE(runkit_return_value_used,								NULL)
 
 #ifdef PHP_RUNKIT_SUPERGLOBALS
@@ -216,24 +214,15 @@ PHP_MINIT_FUNCTION(runkit)
 	REGISTER_LONG_CONSTANT("RUNKIT_IMPORT_OVERRIDE",           PHP_RUNKIT_IMPORT_OVERRIDE,              CONST_CS | CONST_PERSISTENT);
 	REGISTER_STRING_CONSTANT("RUNKIT_VERSION",                 PHP_RUNKIT_VERSION,                      CONST_CS | CONST_PERSISTENT);
 
-#ifdef ZEND_ENGINE_2
 	REGISTER_LONG_CONSTANT("RUNKIT_ACC_PUBLIC",				ZEND_ACC_PUBLIC,					CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("RUNKIT_ACC_PROTECTED",			ZEND_ACC_PROTECTED,					CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("RUNKIT_ACC_PRIVATE",			ZEND_ACC_PRIVATE,					CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("RUNKIT_ACC_STATIC",				ZEND_ACC_STATIC,					CONST_CS | CONST_PERSISTENT);
-#else
-	REGISTER_LONG_CONSTANT("RUNKIT_ACC_PUBLIC",				0x100,					CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("RUNKIT_ACC_PROTECTED",				0x200,					CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("RUNKIT_ACC_PRIVATE",				0x400,					CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("RUNKIT_ACC_STATIC",				0x01,					CONST_CS | CONST_PERSISTENT);
-#endif
 
 #ifdef PHP_RUNKIT_CLASSKIT_COMPAT
-#ifdef ZEND_ENGINE_2
 	REGISTER_LONG_CONSTANT("CLASSKIT_ACC_PUBLIC",			ZEND_ACC_PUBLIC,					CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("CLASSKIT_ACC_PROTECTED",		ZEND_ACC_PROTECTED,					CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("CLASSKIT_ACC_PRIVATE",			ZEND_ACC_PRIVATE,					CONST_CS | CONST_PERSISTENT);
-#endif
 	REGISTER_STRING_CONSTANT("CLASSKIT_VERSION",			PHP_RUNKIT_VERSION,					CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("CLASSKIT_AGGREGATE_OVERRIDE",	PHP_RUNKIT_IMPORT_OVERRIDE,			CONST_CS | CONST_PERSISTENT);
 #endif
@@ -291,22 +280,15 @@ static void php_runkit_register_auto_global(char *s, int len TSRMLS_DC)
 		return;
 	}
 
-#ifdef ZEND_ENGINE_2
 	if (zend_register_auto_global(
 		s,
 		len,
-#if ZEND_MODULE_API_NO >= 20100525
 		0,
-#endif
 		NULL TSRMLS_CC
 	) == SUCCESS) {
 
 		/* This shouldn't be necessary, but it is */
 		zend_auto_global_disable_jit(s, len TSRMLS_CC);
-#else
-	if (zend_register_auto_global(s, len TSRMLS_CC) == SUCCESS) {
-#endif
-
 		if (!RUNKIT_G(superglobals)) {
 			ALLOC_HASHTABLE(RUNKIT_G(superglobals));
 			zend_hash_init(RUNKIT_G(superglobals), 2, NULL, NULL, 0);
@@ -462,12 +444,3 @@ PHP_MINFO_FUNCTION(runkit)
 
 }
 /* }}} */
-
-/*
- * Local variables:
- * tab-width: 4
- * c-basic-offset: 4
- * End:
- * vim600: noet sw=4 ts=4 fdm=marker
- * vim<600: noet sw=4 ts=4
- */

@@ -469,13 +469,3 @@ PHP_FUNCTION(runkit_return_value_used)
 	RETURN_BOOL(!(ptr->opline->result_type & EXT_TYPE_UNUSED));
 }
 /* }}} */
-
-/*
- * Local variables:
- * tab-width: 4
- * c-basic-offset: 4
- * End:
- * vim600: noet sw=4 ts=4 fdm=marker
- * vim<600: noet sw=4 ts=4
- */
-
