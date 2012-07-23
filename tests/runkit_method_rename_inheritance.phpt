@@ -1,5 +1,5 @@
 --TEST--
-runkit_method_rename() function and inheritance
+runkit_method_rename_inheritance() function and inheritance
 --SKIPIF--
 <?php if(!extension_loaded("runkit") || !RUNKIT_FEATURE_MANIPULATION) print "skip"; ?>
 --INI--

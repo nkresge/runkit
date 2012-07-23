@@ -1,5 +1,5 @@
 --TEST--
-runkit_method_copy() function
+Bug #10053 removing a runkit-copied method from a class
 --SKIPIF--
 <?php
 	if(!extension_loaded("runkit") || !RUNKIT_FEATURE_MANIPULATION) print "skip";

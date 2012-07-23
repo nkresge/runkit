@@ -288,7 +288,6 @@ static void php_runkit_register_auto_global(char *s, int len TSRMLS_DC)
 	) == SUCCESS) {
 
 		/* This shouldn't be necessary, but it is */
-		zend_auto_global_disable_jit(s, len TSRMLS_CC);
 		if (!RUNKIT_G(superglobals)) {
 			ALLOC_HASHTABLE(RUNKIT_G(superglobals));
 			zend_hash_init(RUNKIT_G(superglobals), 2, NULL, NULL, 0);

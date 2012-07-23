@@ -13,6 +13,7 @@ class runkit_class {
 runkit_method_add('runkit_class', 'runkit_method', '$a, $b = "bar"', 'echo "a is $a\nb is $b\n";'); 
 runkit_class::runkit_method('foo','bar');
 ?>
---EXPECT--
+--EXPECTF--
+Strict Standards: Non-static method runkit_class::runkit_method() should not be called statically in %s on line %d
 a is foo
 b is bar

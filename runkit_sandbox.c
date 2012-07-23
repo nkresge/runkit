@@ -255,14 +255,12 @@ inline void php_runkit_sandbox_ini_override(php_runkit_sandbox_object *objval, H
 			if (p - s) {
 				*p = '\0';
 				zend_register_auto_global(s, p - s, NULL TSRMLS_CC);
-				zend_auto_global_disable_jit(s, p - s TSRMLS_CC);
 				*p = ',';
 			}
 			s = p + 1;
 		}
 		len = strlen(s);
 		zend_register_auto_global(s, len, NULL TSRMLS_CC);
-		zend_auto_global_disable_jit(s, len TSRMLS_CC);
 	}
 
 	/* May only turn off */
