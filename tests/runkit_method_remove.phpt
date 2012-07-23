@@ -8,10 +8,10 @@ display_errors=on
 --FILE--
 <?php
 class runkit_class {
-	function runkit_method() {
+	static function runkit_method() {
 		echo "Runkit Method\n";
 	}
-	function runkitMethod() {
+	static function runkitMethod() {
 		echo "Runkit Method\n";
 	}
 }

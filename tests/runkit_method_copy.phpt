@@ -3,16 +3,16 @@ runkit_method_copy() function
 --SKIPIF--
 <?php if(!extension_loaded("runkit") || !RUNKIT_FEATURE_MANIPULATION) print "skip"; ?>
 --INI--
-error_reporting=E_ALL
+error_reporting=E_ALL & !E_STRICT
 display_errors=on
 --FILE--
 <?php
 class runkit_one {
-	function runkit_method($n) {
+	static function runkit_method($n) {
 		echo "Runkit Method: $n\n";
 	}
 
-	function runkitMethod($n) {
+	static function runkitMethod($n) {
 		echo "Runkit Method: $n\n";
 	}
 }

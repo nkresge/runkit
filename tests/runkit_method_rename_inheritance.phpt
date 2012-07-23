@@ -8,7 +8,7 @@ display_errors=on
 --FILE--
 <?php
 class runkit_class {
-	function runkit_original($a) {
+	static function runkit_original($a) {
 		echo "Runkit Original: a is $a\n";
 	}
 }
