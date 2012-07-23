@@ -86,11 +86,7 @@ static int php_runkit_fetch_function(int fname_type, char *fname, int fname_len,
 			ALLOC_HASHTABLE(RUNKIT_G(replaced_internal_functions));
 			zend_hash_init(RUNKIT_G(replaced_internal_functions), 4, NULL, NULL, 0);
 		}
-#if PHP_MAJOR_VERSION >= 6
-		zend_u_hash_add(RUNKIT_G(replaced_internal_functions), fname_type, fname, fname_len + 1, (void*)fe, sizeof(zend_function), NULL);
-#else
 		zend_hash_add(RUNKIT_G(replaced_internal_functions), fname, fname_len + 1, (void*)fe, sizeof(zend_function), NULL);
-#endif
 		if (flag >= PHP_RUNKIT_FETCH_FUNCTION_RENAME) {
 			zend_hash_key hash_key;
 
@@ -112,9 +108,7 @@ static int php_runkit_fetch_function(int fname_type, char *fname, int fname_len,
 	Duplicate structures in an op_array where necessary to make an outright duplicate */
 void php_runkit_function_copy_ctor(zend_function *fe, char *newname)
 {
-#if PHP_MAJOR_VERSION > 5 || (PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION >= 1)
 	zend_compiled_variable *dupvars;
-#endif
 	zend_op *opcode_copy;
 	int i;
 
@@ -131,7 +125,6 @@ void php_runkit_function_copy_ctor(zend_function *fe, char *newname)
 	fe->op_array.refcount = emalloc(sizeof(zend_uint));
 	*(fe->op_array.refcount) = 1;
 
-#if PHP_MAJOR_VERSION > 5 || (PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION >= 1)
 	i = fe->op_array.last_var;
 	dupvars = safe_emalloc(fe->op_array.last_var, sizeof(zend_compiled_variable), 0);
 	while (i > 0) {
@@ -141,12 +134,10 @@ void php_runkit_function_copy_ctor(zend_function *fe, char *newname)
 		dupvars[i].hash_value = fe->op_array.vars[i].hash_value;
 	}
 	fe->op_array.vars = dupvars;
-#endif
 
 	opcode_copy = safe_emalloc(sizeof(zend_op), fe->op_array.last, 0);
 	for(i = 0; i < fe->op_array.last; i++) {
 		opcode_copy[i] = fe->op_array.opcodes[i];
-#if ZEND_MODULE_API_NO >= 20100525
 		if (opcode_copy[i].op1_type == IS_CONST) {
 			zval_copy_ctor(&opcode_copy[i].op1.constant);
 		} else {
@@ -158,41 +149,15 @@ void php_runkit_function_copy_ctor(zend_function *fe, char *newname)
 
 		if (opcode_copy[i].op2_type == IS_CONST) {
 			zval_copy_ctor(&opcode_copy[i].op2.constant);
-#else
-		if (opcode_copy[i].op1.op_type == IS_CONST) {
-			zval_copy_ctor(&opcode_copy[i].op1.u.constant);
 		} else {
 			if (opcode_copy[i].op2.jmp_addr >= fe->op_array.opcodes &&
 				opcode_copy[i].op2.jmp_addr <  fe->op_array.opcodes + fe->op_array.last) {
 				opcode_copy[i].op2.jmp_addr =  opcode_copy + (fe->op_array.opcodes[i].op2.jmp_addr - fe->op_array.opcodes);
 			}
-#ifdef ZEND_ENGINE_2
-		} else {
-			if (opcode_copy[i].op1.u.jmp_addr >= fe->op_array.opcodes &&
-				opcode_copy[i].op1.u.jmp_addr <  fe->op_array.opcodes + fe->op_array.last) {
-				opcode_copy[i].op1.u.jmp_addr =  opcode_copy + (fe->op_array.opcodes[i].op1.u.jmp_addr - fe->op_array.opcodes);
-			}
-#endif
-        }
-
-		if (opcode_copy[i].op2.op_type == IS_CONST) {
-			zval_copy_ctor(&opcode_copy[i].op2.u.constant);
-#ifdef ZEND_ENGINE_2
-		} else {
-			if (opcode_copy[i].op2.u.jmp_addr >= fe->op_array.opcodes &&
-				opcode_copy[i].op2.u.jmp_addr <  fe->op_array.opcodes + fe->op_array.last) {
-				opcode_copy[i].op2.u.jmp_addr =  opcode_copy + (fe->op_array.opcodes[i].op2.u.jmp_addr - fe->op_array.opcodes);
-			}
-#endif
-#endif
 		}
 	}
 	fe->op_array.opcodes = opcode_copy;
-#if ZEND_MODULE_API_NO >= 20100525
 	EG(start_op) = fe->op_array.opcodes;
-#else
-	fe->op_array.start_op = fe->op_array.opcodes;
-#endif
 
 	if (newname) {
 		fe->op_array.function_name = newname;
@@ -200,7 +165,6 @@ void php_runkit_function_copy_ctor(zend_function *fe, char *newname)
 		fe->op_array.function_name = estrdup(fe->op_array.function_name);
 	}
 
-#ifdef ZEND_ENGINE_2
 	fe->op_array.prototype = fe;
 
 	if (fe->op_array.arg_info) {
@@ -219,8 +183,6 @@ void php_runkit_function_copy_ctor(zend_function *fe, char *newname)
 
 	fe->op_array.doc_comment = estrndup(fe->op_array.doc_comment, fe->op_array.doc_comment_len);
 	fe->op_array.try_catch_array = (zend_try_catch_element*)estrndup((char*)fe->op_array.try_catch_array, sizeof(zend_try_catch_element) * fe->op_array.last_try_catch);
-#endif
-
 	fe->op_array.brk_cont_array = (zend_brk_cont_element*)estrndup((char*)fe->op_array.brk_cont_array, sizeof(zend_brk_cont_element) * fe->op_array.last_brk_cont);
 }
 /* }}}} */
@@ -263,11 +225,7 @@ int php_runkit_destroy_misplaced_functions(zend_hash_key *hash_key TSRMLS_DC)
 		return ZEND_HASH_APPLY_REMOVE;
 	}
 
-#if PHP_MAJOR_VERSION >= 6
-	zend_u_hash_del(EG(function_table), hash_key->type, hash_key->u.unicode, hash_key->nKeyLength);
-#else
 	zend_hash_del(EG(function_table), hash_key->arKey, hash_key->nKeyLength);
-#endif
 
 	return ZEND_HASH_APPLY_REMOVE;
 }
@@ -282,15 +240,7 @@ int php_runkit_restore_internal_functions(RUNKIT_53_TSRMLS_ARG(zend_internal_fun
 		return ZEND_HASH_APPLY_REMOVE;
 	}
 
-#if (RUNKIT_UNDER53)
-    void ***tsrm_ls = va_arg(args, void***); /* NULL when !defined(ZTS) */
-#endif
-
-#if PHP_MAJOR_VERSION >= 6
-	zend_u_hash_update(EG(function_table), hash_key->type, hash_key->u.unicode, hash_key->nKeyLength, (void*)fe, sizeof(zend_function), NULL);
-#else
 	zend_hash_update(EG(function_table), hash_key->arKey, hash_key->nKeyLength, (void*)fe, sizeof(zend_function), NULL);
-#endif
 
 	return ZEND_HASH_APPLY_REMOVE;
 }
@@ -327,11 +277,7 @@ PHP_FUNCTION(runkit_function_add)
 		RETURN_FALSE;
 	}
 
-#if PHP_MAJOR_VERSION >= 6
-	spprintf(&delta, 0, "function %R(%R){%R}", funcname_type, funcname, arglist_type, arglist, code_type, code);
-#else
 	spprintf(&delta, 0, "function %s(%s){%s}", funcname, arglist, code);
-#endif
 
 	if (!delta) {
 		RETURN_FALSE;
@@ -520,11 +466,7 @@ PHP_FUNCTION(runkit_return_value_used)
 		RETURN_FALSE;
 	}
 
-#if ZEND_MODULE_API_NO >= 20100525
 	RETURN_BOOL(!(ptr->opline->result_type & EXT_TYPE_UNUSED));
-#else
-	RETURN_BOOL(!(ptr->opline->result.u.EA.type & EXT_TYPE_UNUSED));
-#endif
 }
 /* }}} */
 
