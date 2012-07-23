@@ -51,9 +51,6 @@ static zend_class_entry *php_runkit_sandbox_class_entry;
 int php_runkit_sandbox_array_deep_copy(RUNKIT_53_TSRMLS_ARG(zval **value), int num_args, va_list args, zend_hash_key *hash_key)
 {
 	HashTable *target_hashtable = va_arg(args, HashTable*);
-#if (RUNKIT_UNDER53)
-	TSRMLS_D = va_arg(args, void***);
-#endif
 	zval *copyval;
 
 	MAKE_STD_ZVAL(copyval);
@@ -62,11 +59,7 @@ int php_runkit_sandbox_array_deep_copy(RUNKIT_53_TSRMLS_ARG(zval **value), int n
 	PHP_SANDBOX_CROSS_SCOPE_ZVAL_COPY_CTOR(copyval);
 
 	if (hash_key->nKeyLength) {
-#if PHP_MAJOR_VERSION >= 6
-		zend_u_hash_quick_update(target_hashtable, hash_key->type == HASH_KEY_IS_UNICODE ? IS_UNICODE : IS_STRING, hash_key->u.string, hash_key->nKeyLength, hash_key->h, &copyval, sizeof(zval*), NULL);
-#else
 		zend_hash_quick_update(target_hashtable, hash_key->arKey, hash_key->nKeyLength, hash_key->h, &copyval, sizeof(zval*), NULL);
-#endif
 	} else {
 		zend_hash_index_update(target_hashtable, hash_key->h, &copyval, sizeof(zval*), NULL);
 	}
@@ -382,13 +375,11 @@ PHP_METHOD(Runkit_Sandbox,__call)
 				MAKE_STD_ZVAL(*sandbox_args[i]);
 				**sandbox_args[i] = **tmpzval;
 
-#if RUNKIT_ABOVE53
 				if (Z_TYPE_P(*sandbox_args[i]) == IS_OBJECT && zend_get_class_entry(*sandbox_args[i], prior_context) == zend_ce_closure) {
 					zend_closure *closure;
 					closure = (zend_closure *) zend_object_store_get_object(*sandbox_args[i], prior_context);
 					zend_object_store_set_object(*sandbox_args[i], closure TSRMLS_CC);
 				} else
-#endif
 					PHP_SANDBOX_CROSS_SCOPE_ZVAL_COPY_CTOR(*sandbox_args[i]);
 			}
 
@@ -414,12 +405,10 @@ PHP_METHOD(Runkit_Sandbox,__call)
 			}
 
 			for(i = 0; i < argc; i++) {
-#if RUNKIT_ABOVE53
 				if (Z_TYPE_P(*sandbox_args[i]) == IS_OBJECT && zend_get_class_entry(*sandbox_args[i], prior_context) == zend_ce_closure) {
 					zend_objects_store_del_ref(*sandbox_args[i] TSRMLS_CC);
 					zval_ptr_dtor(sandbox_args[i]);
 				}
-#endif
 				zval_ptr_dtor(sandbox_args[i]);
 				efree(sandbox_args[i]);
 			}

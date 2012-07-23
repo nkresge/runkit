@@ -31,11 +31,6 @@ int php_runkit_update_children_def_props(RUNKIT_53_TSRMLS_ARG(zend_class_entry *
 	zval *p = va_arg(args, zval*);
 	char *pname = va_arg(args, char*);
 	int pname_len = va_arg(args, int);
-	RUNKIT_UNDER53_TSRMLS_FETCH();
-
-#ifdef ZEND_ENGINE_2
-	ce = *((zend_class_entry**)ce);
-#endif
 
 	if (ce->parent != parent_class) {
 		/* Not a child, ignore */
@@ -44,21 +39,14 @@ int php_runkit_update_children_def_props(RUNKIT_53_TSRMLS_ARG(zend_class_entry *
 
 	if (
 		Z_TYPE_P(p) == IS_CONSTANT_ARRAY
-#if RUNKIT_ABOVE53
 		|| (Z_TYPE_P(p) & IS_CONSTANT_TYPE_MASK) == IS_CONSTANT
-#endif
 	) {
 		zval_update_constant_ex(&p, (void*) 1, ce TSRMLS_CC);
 	}
 
 	Z_ADDREF_P(p);
-#if ZEND_MODULE_API_NO >= 20100525
 	zend_hash_del(&ce->default_properties_table, pname, pname_len + 1);
 	if (zend_hash_add(&ce->default_properties_table, pname, pname_len + 1, (void *) &p, sizeof(zval*), NULL) ==  FAILURE) {
-#else
-	zend_hash_del(&ce->default_properties, pname, pname_len + 1);
-	if (zend_hash_add(&ce->default_properties, pname, pname_len + 1, (void *) &p, sizeof(zval*), NULL) ==  FAILURE) {
-#endif
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Error updating child class");
 		return ZEND_HASH_APPLY_KEEP;
 	}
@@ -77,11 +65,8 @@ int php_runkit_remove_children_def_props(RUNKIT_53_TSRMLS_ARG(zend_class_entry *
 	zend_class_entry *parent_class =  va_arg(args, zend_class_entry*);
 	char *pname = va_arg(args, char*);
 	int pname_len = va_arg(args, int);
-	RUNKIT_UNDER53_TSRMLS_FETCH();
 
-#ifdef ZEND_ENGINE_2
 	ce = *((zend_class_entry**)ce);
-#endif
 
 	if (ce->parent != parent_class) {
 		/* Not a child, ignore */
@@ -91,11 +76,7 @@ int php_runkit_remove_children_def_props(RUNKIT_53_TSRMLS_ARG(zend_class_entry *
 	/* Process children of this child */
 	zend_hash_apply_with_arguments(RUNKIT_53_TSRMLS_PARAM(EG(class_table)), (apply_func_args_t)php_runkit_remove_children_def_props, 4, ce, pname, pname_len);
 
-#if ZEND_MODULE_API_NO >= 20100525
 	if (zend_hash_del(&ce->default_properties_table, pname, pname_len + 1) == FAILURE) {
-#else
-	if (zend_hash_del(&ce->default_properties, pname, pname_len + 1) == FAILURE) {
-#endif
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Error removing default property from child class");
 		return ZEND_HASH_APPLY_KEEP;
 	}
@@ -112,11 +93,8 @@ int php_runkit_update_children_static_props(RUNKIT_53_TSRMLS_ARG(zend_class_entr
 	zval *p = va_arg(args, zval*);
 	char *pname = va_arg(args, char*);
 	int pname_len = va_arg(args, int);
-	RUNKIT_UNDER53_TSRMLS_FETCH();
 
-#ifdef ZEND_ENGINE_2
 	ce = *((zend_class_entry**)ce);
-#endif
 
 	if (ce->parent != parent_class) {
 		/* Not a child, ignore */
@@ -157,36 +135,22 @@ static int php_runkit_def_prop_add(char *classname, int classname_len, char *pro
 		ALLOC_ZVAL(copyval);
 		*copyval = *value;
 		zval_copy_ctor(copyval);
-#if (PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION >= 3) || (PHP_MAJOR_VERSION >= 6)
 		Z_SET_REFCOUNT_P(copyval, 1);
 		Z_UNSET_ISREF_P(copyval);
-#else
-		copyval->RUNKIT_REFCOUNT = 1;
-		copyval->is_ref = 0;
-#endif
 	}
 
 	/* Check for existing property by this name */
 	/* Existing public? */
-#if ZEND_MODULE_API_NO >= 20100525
 	if (zend_hash_exists(&ce->default_properties_table, key, key_len + 1)) {
-#else
-	if (zend_hash_exists(&ce->default_properties, key, key_len + 1)) {
-#endif
 		zval_ptr_dtor(&copyval);
 		FREE_ZVAL(copyval);
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s::%s already exists", classname, propname);
 		return FAILURE;
 	}
 
-#ifdef ZEND_ENGINE_2
 	/* Existing Protected? */
 	zend_mangle_property_name(&temp, &temp_len, "*", 1, propname, propname_len, 0);
-#if ZEND_MODULE_API_NO >= 20100525
 	if (zend_hash_exists(&ce->default_properties_table, temp, temp_len + 1)) {
-#else
-	if (zend_hash_exists(&ce->default_properties, temp, temp_len + 1)) {
-#endif
 		zval_ptr_dtor(&copyval);
 		FREE_ZVAL(copyval);
 		efree(temp);
@@ -197,11 +161,7 @@ static int php_runkit_def_prop_add(char *classname, int classname_len, char *pro
 
 	/* Existing Private? */
 	zend_mangle_property_name(&temp, &temp_len, classname, classname_len, propname, propname_len, 0);
-#if ZEND_MODULE_API_NO >= 20100525
 	if (zend_hash_exists(&ce->default_properties_table, temp, temp_len + 1)) {
-#else
-	if (zend_hash_exists(&ce->default_properties, temp, temp_len + 1)) {
-#endif
 		zval_ptr_dtor(&copyval);
 		FREE_ZVAL(copyval);
 		efree(temp);
@@ -228,16 +188,6 @@ static int php_runkit_def_prop_add(char *classname, int classname_len, char *pro
 	}
 
 	return SUCCESS;
-#else
-	if (zend_hash_add(&ce->default_properties, key, key_len+1, &copyval, sizeof(zval*), NULL) == FAILURE) {
-		zval_ptr_dtor(&copyval);
-		FREE_ZVAL(copyval);
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to add default property to class definition");
-		return FAILURE;
-	}
-
-	return SUCCESS;
-#endif
 }
 /* }}} */
 
@@ -260,23 +210,14 @@ static int php_runkit_def_prop_remove(char *classname, int classname_len, char *
 	}
 
 	/* Resolve the property's name */
-#if ZEND_MODULE_API_NO >= 20100525
 	if (zend_hash_exists(&ce->default_properties_table, propname, propname_len + 1)) {
-#else
-	if (zend_hash_exists(&ce->default_properties, propname, propname_len + 1)) {
-#endif
 		key = propname;
 		key_len = propname_len;
 	}
 
-#ifdef ZEND_ENGINE_2
 	if (!key) {
 		zend_mangle_property_name(&protected, &protected_len, "*", 1, propname, propname_len, 0);
-#if ZEND_MODULE_API_NO >= 20100525
 		if (zend_hash_exists(&ce->default_properties_table, protected, protected_len + 1)) {
-#else
-		if (zend_hash_exists(&ce->default_properties, protected, protected_len + 1)) {
-#endif
 			key = protected;
 			key_len = protected_len;
 		} else {
@@ -286,11 +227,7 @@ static int php_runkit_def_prop_remove(char *classname, int classname_len, char *
 
 	if (!key) {
 		zend_mangle_property_name(&private, &private_len, classname, classname_len, propname, propname_len, 0);
-#if ZEND_MODULE_API_NO >= 20100525
 		if (zend_hash_exists(&ce->default_properties_table, private, private_len + 1)) {
-#else
-		if (zend_hash_exists(&ce->default_properties, private, private_len + 1)) {
-#endif
 			key = private;
 			key_len = private_len;
 			is_private = 1;
@@ -298,18 +235,13 @@ static int php_runkit_def_prop_remove(char *classname, int classname_len, char *
 			efree(private);
 		}
 	}
-#endif
 
 	if (!key) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s::%s does not exist", classname, propname);
 		return FAILURE;
 	}
 
-#if ZEND_MODULE_API_NO >= 20100525
 	if (zend_hash_del(&ce->default_properties_table, key, key_len + 1) == FAILURE) {
-#else
-	if (zend_hash_del(&ce->default_properties, key, key_len + 1) == FAILURE) {
-#endif
 		if (key != propname) {
 			efree(key);
 		}
@@ -342,9 +274,7 @@ PHP_FUNCTION(runkit_default_property_add)
 	zval *value;
 	long visibility;
 
-#ifdef ZEND_ENGINE_2
 	visibility = ZEND_ACC_PUBLIC;
-#endif
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s/s/z|l", &classname, &classname_len, &propname, &propname_len, &value, &visibility) == FAILURE) {
 		RETURN_FALSE;
@@ -370,12 +300,3 @@ PHP_FUNCTION(runkit_default_property_remove)
 }
 /* }}} */
 #endif /* PHP_RUNKIT_MANIPULATION */
-
-/*
- * Local variables:
- * tab-width: 4
- * c-basic-offset: 4
- * End:
- * vim600: noet sw=4 ts=4 fdm=marker
- * vim<600: noet sw=4 ts=4
- */

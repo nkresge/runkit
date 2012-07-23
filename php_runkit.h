@@ -126,13 +126,10 @@ extern ZEND_DECLARE_MODULE_GLOBALS(runkit);
 
 #define RUNKIT_REFCOUNT  refcount__gc
 #define RUNKIT_IS_REF    is_ref__gc
-#     define RUNKIT_IS_CALLABLE(cb_zv, flags, cb_sp) zend_is_callable((cb_zv), (flags), (cb_sp) TSRMLS_CC)
-#     define RUNKIT_FILE_HANDLE_DTOR(pHandle)        zend_file_handle_dtor((pHandle) TSRMLS_CC)
-#     define RUNKIT_53_TSRMLS_PARAM(param)           (param) TSRMLS_CC
-#     define RUNKIT_53_TSRMLS_ARG(arg)               arg TSRMLS_DC
-#     define RUNKIT_UNDER53_TSRMLS_FETCH()
-#     define RUNKIT_UNDER53                          0
-#     define RUNKIT_ABOVE53                          1
+#define RUNKIT_IS_CALLABLE(cb_zv, flags, cb_sp) zend_is_callable((cb_zv), (flags), (cb_sp) TSRMLS_CC)
+#define RUNKIT_FILE_HANDLE_DTOR(pHandle)        zend_file_handle_dtor((pHandle) TSRMLS_CC)
+#define RUNKIT_53_TSRMLS_PARAM(param)           (param) TSRMLS_CC
+#define RUNKIT_53_TSRMLS_ARG(arg)               arg TSRMLS_DC
 
 #ifndef ALLOC_PERMANENT_ZVAL
 # define ALLOC_PERMANENT_ZVAL(z) \

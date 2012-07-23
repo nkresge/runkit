@@ -80,11 +80,9 @@ static HashTable *php_runkit_sandbox_parent_resolve_symbol_table(php_runkit_sand
 	zend_execute_data *oldCurExData;
 	zend_execute_data *ex = EG(current_execute_data);
 
-#if (RUNKIT_UNDER53 == 0)
 	if (!EG(active_symbol_table)) {
 		zend_rebuild_symbol_table(TSRMLS_C);
 	}
-#endif
 
 	if (objval->self->parent_scope <= 0) {
 		HashTable *ht = &EG(symbol_table);
@@ -147,9 +145,6 @@ static HashTable *php_runkit_sandbox_parent_resolve_symbol_table(php_runkit_sand
 		ex = ex->prev_execute_data;
 	}
 
-#if (RUNKIT_UNDER53)
-	return ex->symbol_table ? ex->symbol_table : &EG(symbol_table);
-#else
 	oldActiveSymbolTable = EG(active_symbol_table);
 	EG(active_symbol_table) = NULL;
 	oldCurExData = EG(current_execute_data);
@@ -159,7 +154,6 @@ static HashTable *php_runkit_sandbox_parent_resolve_symbol_table(php_runkit_sand
 	EG(active_symbol_table) = oldActiveSymbolTable;
 	EG(current_execute_data) = oldCurExData;
 	return result;
-#endif
 }
 
 /* {{{ proto Runkit_Sandbox_Parent::__call(mixed function_name, array args)

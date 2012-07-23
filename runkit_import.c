@@ -324,11 +324,9 @@ static int php_runkit_import_classes(HashTable *class_table, long flags TSRMLS_D
 		long idx;
 
 		zend_hash_get_current_data_ex(class_table, (void**)&ce, &pos);
-#ifdef ZEND_ENGINE_2
 		if (ce) {
 			ce = *((zend_class_entry**)ce);
 		}
-#endif
 		if (!ce) {
 			php_error_docref(NULL TSRMLS_CC, E_ERROR, "Non-class in class table!");
 			return FAILURE;
@@ -347,14 +345,12 @@ static int php_runkit_import_classes(HashTable *class_table, long flags TSRMLS_D
 				continue;
 			}
 
-#ifdef ZEND_ENGINE_2
 			if (flags & PHP_RUNKIT_IMPORT_CLASS_CONSTS) {
 				php_runkit_import_class_consts(dce, ce, (flags & PHP_RUNKIT_IMPORT_OVERRIDE) TSRMLS_CC);
 			}
 			if (flags & PHP_RUNKIT_IMPORT_CLASS_STATIC_PROPS) {
 				php_runkit_import_class_static_props(dce, ce, (flags & PHP_RUNKIT_IMPORT_OVERRIDE) TSRMLS_CC);
 			}
-#endif
 
 			if (flags & PHP_RUNKIT_IMPORT_CLASS_PROPS) {
 				php_runkit_import_class_props(dce, ce, (flags & PHP_RUNKIT_IMPORT_OVERRIDE) TSRMLS_CC);
@@ -412,17 +408,11 @@ static zend_op_array *php_runkit_compile_filename(int type, zval *filename TSRML
 	file_handle.free_filename = 0;
 	file_handle.type = ZEND_HANDLE_FILENAME;
 	file_handle.opened_path = NULL;
-#if PHP_MAJOR_VERSION > 5 || (PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION > 0)
 	file_handle.handle.fp = NULL;
-#endif
 
 	/* Use builtin compiler only -- bypass accelerators and whatnot */
 	retval = compile_file(&file_handle, type TSRMLS_CC);
-#ifdef ZEND_ENGINE_2
 	if (retval && file_handle.handle.stream.handle) {
-#else /* ZEND ENGINE 1 */
-	if (retval && ZEND_IS_VALID_FILE_HANDLE(&file_handle)) {
-#endif
 		int dummy = 1;
 
 		if (!file_handle.opened_path) {
@@ -449,9 +439,7 @@ void (*php_runkit_old_error_cb)(int type, const char *error_filename, const uint
 
 /* {{{ php_runkit_error_cb */
 void php_runkit_error_cb(int type, const char *error_filename, const uint error_lineno, const char *format, va_list args) {
-#ifdef ZEND_ENGINE_2
 	TSRMLS_FETCH();
-#endif
 	zend_error_cb = php_runkit_old_error_cb;
 	CG(class_table) = current_class_table;
 	EG(class_table) = current_eg_class_table;
@@ -525,11 +513,7 @@ PHP_FUNCTION(runkit_import)
 	}
 
 	/* We never really needed the main loop opcodes to begin with */
-#ifdef ZEND_ENGINE_2
 	destroy_op_array(new_op_array TSRMLS_CC);
-#else
-	destroy_op_array(new_op_array);
-#endif
 	efree(new_op_array);
 
 	if (flags & PHP_RUNKIT_IMPORT_FUNCTIONS) {
@@ -551,12 +535,3 @@ PHP_FUNCTION(runkit_import)
 }
 /* }}} */
 #endif /* PHP_RUNKIT_MANIPULATION */
-
-/*
- * Local variables:
- * tab-width: 4
- * c-basic-offset: 4
- * End:
- * vim600: noet sw=4 ts=4 fdm=marker
- * vim<600: noet sw=4 ts=4
- */
