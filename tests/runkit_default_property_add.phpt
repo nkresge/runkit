@@ -1,6 +1,13 @@
 --TEST--
 runkit_default_property_add() function
 --SKIPIF--
+<?php
+// runkit_default_property_add doesn't work in 5.4 and is undocumented and unused.
+?>
+<?php
+    // The method runkit_default_property_add is undocumented or unused, so skip this test.
+    print "skip";
+?>
 <?php if(!extension_loaded("runkit") || !RUNKIT_FEATURE_MANIPULATION) print "skip";
       if(array_shift(explode('.', PHP_VERSION)) < 5) print "skip";
 ?>

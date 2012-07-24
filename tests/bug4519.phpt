@@ -1,6 +1,10 @@
 --TEST--
-Bug #4519 Unable to override class definitions of a derived class
+Bug #4519 Unable to override class definitions of a derived class in import
 --SKIPIF--
+<?php
+// Skipping this because runkit_import is unused.
+echo 'skip';
+?>
 <?php if(!extension_loaded("runkit") || !RUNKIT_FEATURE_MANIPULATION) print "skip"; ?>
 --FILE--
 <?php

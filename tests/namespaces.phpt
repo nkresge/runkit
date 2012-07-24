@@ -41,4 +41,4 @@ Mocked
 New mocked
 New
 
-Fatal error: Call to undefined method Test\Foo::n() in %s on line %d
+Fatal error: Call to undefined method test\foo::n() in %s on line %d

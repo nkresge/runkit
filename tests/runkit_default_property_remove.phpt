@@ -1,6 +1,10 @@
 --TEST--
-runkit_default_property_add() function
+runkit_default_property_remove() function
 --SKIPIF--
+<?php
+// runkit_default_property_remove doesn't work in 5.4 and isn't documented.
+echo 'skip';
+?>
 <?php if(!extension_loaded("runkit") || !RUNKIT_FEATURE_MANIPULATION) print "skip";
       if(array_shift(explode(".", PHP_VERSION)) < 5) print "skip";
 ?>

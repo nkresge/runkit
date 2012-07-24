@@ -2,6 +2,10 @@
 runkit_import() Importing and overriding method with a static variable
 --SKIPIF--
 <?php
+// Skipping this because runkit_import is unused in tag web code.
+echo 'skip';
+?>
+<?php
     if(!extension_loaded("runkit") || !RUNKIT_FEATURE_MANIPULATION) print "skip";
 ?>
 --FILE--
