@@ -92,7 +92,7 @@ static int php_runkit_fetch_function(int fname_type, char *fname, int fname_len,
 
 			if (!RUNKIT_G(misplaced_internal_functions)) {
 				ALLOC_HASHTABLE(RUNKIT_G(misplaced_internal_functions));
-				zend_hash_init(RUNKIT_G(misplaced_internal_functions), 4, NULL, (dtor_func_t) php_runkit_hash_key_dtor, 0);
+				zend_hash_init(RUNKIT_G(misplaced_internal_functions), 4, NULL, php_runkit_hash_key_dtor, 0);
 			}
 			hash_key.nKeyLength = fname_len + 1;
 			PHP_RUNKIT_HASH_KEY(&hash_key) = estrndup(fname, PHP_RUNKIT_HASH_KEYLEN(&hash_key));
@@ -438,7 +438,7 @@ PHP_FUNCTION(runkit_function_copy)
 		PHP_RUNKIT_HASH_KEY(&hash_key) = estrndup(dfunc, PHP_RUNKIT_HASH_KEYLEN(&hash_key));
 		if (!RUNKIT_G(misplaced_internal_functions)) {
 			ALLOC_HASHTABLE(RUNKIT_G(misplaced_internal_functions));
-			zend_hash_init(RUNKIT_G(misplaced_internal_functions), 4, NULL, (dtor_func_t) php_runkit_hash_key_dtor, 0);
+			zend_hash_init(RUNKIT_G(misplaced_internal_functions), 4, NULL, php_runkit_hash_key_dtor, 0);
 		}
 		zend_hash_next_index_insert(RUNKIT_G(misplaced_internal_functions), (void*)&hash_key, sizeof(zend_hash_key), NULL);
 	}
