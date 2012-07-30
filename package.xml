@@ -128,7 +128,6 @@ Execute code in restricted environment (sandboxing).
     <file name="runkit_import_class_property4.phpt" role="test" />
     <file name="runkit_import_with_syntax_error.inc" role="test" />
     <file name="runkit_import_with_syntax_error.phpt" role="test" />
-    <file name="runkit_sandbox_with_register_globals.phpt" role="test" />
    </dir> <!-- //tests -->
    <file name="config.m4" role="src" />
    <file name="config.w32" role="src" />
@@ -145,7 +144,6 @@ Execute code in restricted environment (sandboxing).
    <file name="runkit_props.c" role="src" />
    <file name="runkit_sandbox.c" role="src" />
    <file name="runkit_sandbox_parent.c" role="src" />
-   <file name="tsrm_5.0.diff" role="src" />
   </dir> <!-- / -->
  </contents>
  <dependencies>
